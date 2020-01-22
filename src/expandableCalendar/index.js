@@ -101,7 +101,6 @@ class ExpandableCalendar extends Component {
     };
 
     this.state = {
-      deltaY: new Animated.Value(startHeight),
       headerDeltaY: new Animated.Value(this.props.initialPosition === POSITIONS.CLOSED ? 0 : -HEADER_HEIGHT),
       position: props.initialPosition
     };
@@ -292,7 +291,7 @@ class ExpandableCalendar extends Component {
       this._height = toValue || newValue;
       isOpen = this._height >= threshold; // re-check after this._height was set
 
-      Animated.spring(deltaY, {
+      Animated.spring(this.deltaY, {
         toValue: this._height,
         speed: SPEED,
         bounciness: BOUNCINESS
@@ -470,7 +469,7 @@ class ExpandableCalendar extends Component {
 
   render() {
     const {style, hideKnob, horizontal, allowShadow, theme, ...others} = this.props;
-    const {deltaY, position} = this.state;
+    const {position} = this.state;
     const isOpen = position === POSITIONS.OPEN;
     const themeObject = Object.assign(this.headerStyleOverride, theme);
 
