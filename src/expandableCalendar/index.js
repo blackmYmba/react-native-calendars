@@ -88,6 +88,7 @@ class ExpandableCalendar extends Component {
     this.calendar = undefined;
     this.visibleMonth = this.getMonth(this.props.context.date);
     this.initialDate = props.context.date; // should be set only once!!!
+    this.deltaY = new Animated.Value(startHeight);
     this.headerStyleOverride = {
       'stylesheet.calendar.header': {
         week: {
@@ -243,7 +244,16 @@ class ExpandableCalendar extends Component {
       // disable pan detection to limit to closed height
       return false;
     }
-    return gestureState.dy > 5 || gestureState.dy < -5;
+    if (this.state.position === POSITIONS.OPEN && gestureState.dy > 0) {
+      // disable pan detection to limit to closed height
+      return false;
+    }
+    if (gestureState.dy !== 0) {
+      this.deltaY.stopAnimation();
+    }
+    if (gestureState.dy > 5 || gestureState.dy < -5) {
+      return true;
+    }
   };
   handlePanResponderGrant = () => {
   
@@ -273,13 +283,12 @@ class ExpandableCalendar extends Component {
   
   bounceToPosition(toValue) {  
     if (!this.props.disablePan) {  
-      const {deltaY} = this.state;
       const threshold = this.openHeight / 1.75;
 
       let isOpen = this._height >= threshold;
       const newValue = isOpen ? this.openHeight : this.closedHeight;
       
-      deltaY.setValue(this._height); // set the start position for the animated value
+      this.deltaY.setValue(this._height); // set the start position for the animated value
       this._height = toValue || newValue;
       isOpen = this._height >= threshold; // re-check after this._height was set
 
@@ -287,7 +296,7 @@ class ExpandableCalendar extends Component {
         toValue: this._height,
         speed: SPEED,
         bounciness: BOUNCINESS
-      }).start(this.onAnimatedFinished);
+      }).start();
 
       this.setPosition();
       this.closeHeader(isOpen);
@@ -469,7 +478,7 @@ class ExpandableCalendar extends Component {
       <View style={[allowShadow && this.style.containerShadow, style]}>
         <Animated.View 
           ref={e => {this.wrapper = e;}}
-          style={{height: deltaY}} 
+          style={{height: this.deltaY}} 
           {...this.panResponder.panHandlers}
         >
           <CalendarList
