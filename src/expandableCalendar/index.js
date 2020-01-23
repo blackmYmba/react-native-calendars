@@ -244,13 +244,12 @@ class ExpandableCalendar extends Component {
       return false;
     }
     if (this.state.position === POSITIONS.OPEN && gestureState.dy > 0) {
-      // disable pan detection to limit to closed height
+      // disable pan detection to limit to opened height
       return false;
     }
-    if (gestureState.dy !== 0) {
-      this.deltaY.stopAnimation();
-    }
     if (gestureState.dy > 5 || gestureState.dy < -5) {
+      this.deltaY.stopAnimation();
+      this.deltaY.setValue(this._height);
       return true;
     }
   };
