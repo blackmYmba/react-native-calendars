@@ -78,7 +78,7 @@ class ExpandableCalendar extends Component {
     this.closedHeight = CLOSED_HEIGHT + (props.hideKnob ? 0 : KNOB_CONTAINER_HEIGHT);
     this.numberOfWeeks = this.getNumberOfWeeksInMonth(XDate(this.props.context.date));
     this.openHeight = this.getOpenHeight();
-    
+
     const startHeight = props.initialPosition === POSITIONS.CLOSED ? this.closedHeight : this.openHeight;
     this._height = startHeight;
     this._wrapperStyles = {style: {}};
@@ -125,7 +125,7 @@ class ExpandableCalendar extends Component {
       this.scrollToDate(date);
     }
   }
-  
+
   updateNativeStyles() {
     this.wrapper && this.wrapper.setNativeProps(this._wrapperStyles);
     if (!this.props.horizontal) {
@@ -150,7 +150,7 @@ class ExpandableCalendar extends Component {
   scrollPage(next) {
     if (this.props.horizontal) {
       const d = parseDate(this.props.context.date);
-      
+
       if (this.state.position === POSITIONS.OPEN) {
         d.setDate(1);
         d.addMonths(next ? 1 : -1);
@@ -163,7 +163,7 @@ class ExpandableCalendar extends Component {
         const firstDayOfWeek = (next ? 7 : -7) - dayOfTheWeek + firstDay;
         d.addDays(firstDayOfWeek);
       }
-      _.invoke(this.props.context, 'setDate', this.getDateString(d), UPDATE_SOURCES.PAGE_SCROLL); 
+      _.invoke(this.props.context, 'setDate', this.getDateString(d), UPDATE_SOURCES.PAGE_SCROLL);
     }
   }
 
@@ -206,7 +206,7 @@ class ExpandableCalendar extends Component {
         marked[context.date] = {selected: true};
       }
       return marked;
-    } 
+    }
     return {[context.date]: {selected: true}};
   }
 
@@ -232,6 +232,9 @@ class ExpandableCalendar extends Component {
   /** Pan Gesture */
 
   handleMoveShouldSetPanResponder = (e, gestureState) => {
+    if (this.panResponder.panHandlers.childrenPositionY && this.panResponder.panHandlers.childrenPositionY > 0) {
+      return false;
+    }
     if (this.props.disablePan) {
       return false;
     }
@@ -252,9 +255,11 @@ class ExpandableCalendar extends Component {
       this.deltaY.setValue(this._height);
       return true;
     }
+
+    return false
   };
   handlePanResponderGrant = () => {
-  
+
   };
   handlePanResponderMove = (e, gestureState) => {
     // limit min height to closed height
@@ -278,14 +283,14 @@ class ExpandableCalendar extends Component {
   };
 
   /** Animated */
-  
-  bounceToPosition(toValue) {  
-    if (!this.props.disablePan) {  
+
+  bounceToPosition(toValue) {
+    if (!this.props.disablePan) {
       const threshold = this.openHeight / 1.75;
 
       let isOpen = this._height >= threshold;
       const newValue = isOpen ? this.openHeight : this.closedHeight;
-      
+
       this.deltaY.setValue(this._height); // set the start position for the animated value
       this._height = toValue || newValue;
       isOpen = this._height >= threshold; // re-check after this._height was set
@@ -312,7 +317,7 @@ class ExpandableCalendar extends Component {
     const isClosed = this._height === this.closedHeight;
     this.setState({position: isClosed ? POSITIONS.CLOSED : POSITIONS.OPEN});
   }
-  
+
   resetWeekCalendarOpacity(isOpen) {
     this._weekCalendarStyles.style.opacity = isOpen ? 0 : 1;
     this.updateNativeStyles();
@@ -331,7 +336,7 @@ class ExpandableCalendar extends Component {
       }).start();
     }
   }
-  
+
   /** Events */
 
   onPressArrowLeft = () => {
@@ -342,8 +347,8 @@ class ExpandableCalendar extends Component {
   }
 
   onDayPress = (value) => { // {year: 2019, month: 4, day: 22, timestamp: 1555977600000, dateString: "2019-04-23"}
-    _.invoke(this.props.context, 'setDate', value.dateString, UPDATE_SOURCES.DAY_PRESS); 
-    
+    _.invoke(this.props.context, 'setDate', value.dateString, UPDATE_SOURCES.DAY_PRESS);
+
     setTimeout(() => { // to allows setDate to be completed
       if (this.state.position === POSITIONS.OPEN) {
         this.bounceToPosition(this.closedHeight);
@@ -357,7 +362,7 @@ class ExpandableCalendar extends Component {
 
       // for horizontal scroll
       const {date, updateSource} = this.props.context;
-      
+
       if (this.visibleMonth !== this.getMonth(date) && updateSource !== UPDATE_SOURCES.DAY_PRESS) {
         const next = this.isLaterDate(_.first(value), date);
         this.scrollPage(next);
@@ -383,11 +388,11 @@ class ExpandableCalendar extends Component {
     const weekDaysNames = dateutils.weekDayNames(this.props.firstDay);
 
     return (
-      <View 
+      <View
         style={[
-          this.style.weekDayNames, 
+          this.style.weekDayNames,
           {
-            paddingLeft: _.get(this.props, 'calendarStyle.paddingLeft') + 6 || DAY_NAMES_PADDING, 
+            paddingLeft: _.get(this.props, 'calendarStyle.paddingLeft') + 6 || DAY_NAMES_PADDING,
             paddingRight: _.get(this.props, 'calendarStyle.paddingRight') + 6 || DAY_NAMES_PADDING
           }
         ]}
@@ -423,9 +428,9 @@ class ExpandableCalendar extends Component {
       <Animated.View
         ref={e => this.weekCalendar = e}
         style={{
-          position: 'absolute', 
-          left: 0, 
-          right: 0, 
+          position: 'absolute',
+          left: 0,
+          right: 0,
           top: HEADER_HEIGHT + (commons.isAndroid ? 8 : 4), // align row on top of calendar's first row
           opacity: position === POSITIONS.OPEN ? 0 : 1
         }}
@@ -474,9 +479,9 @@ class ExpandableCalendar extends Component {
 
     return (
       <View style={[allowShadow && this.style.containerShadow, style]}>
-        <Animated.View 
+        <Animated.View
           ref={e => {this.wrapper = e;}}
-          style={{height: this.deltaY}} 
+          style={{height: this.deltaY}}
           {...this.panResponder.panHandlers}
         >
           <CalendarList
@@ -497,7 +502,7 @@ class ExpandableCalendar extends Component {
             hideExtraDays={!horizontal}
             renderArrow={this.renderArrow}
             staticHeader
-          /> 
+          />
           {horizontal && this.renderWeekCalendar()}
           {!hideKnob && this.renderKnob()}
           {!horizontal && this.renderHeader()}
