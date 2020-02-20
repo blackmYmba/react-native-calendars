@@ -27,10 +27,12 @@ const POSITIONS = {
 };
 const SPEED = 20;
 const BOUNCINESS = 6;
-const CLOSED_HEIGHT = 70; // header + 1 week
+const CLOSED_HEIGHT = 70;
+const OPENED_HEIGHT = 310;
+const NUMBER_OF_WEEKS = 6;
 const WEEK_HEIGHT = 46;
 const KNOB_CONTAINER_HEIGHT = 20;
-const HEADER_HEIGHT = 20;
+const HEADER_HEIGHT = 22.5;
 const DAY_NAMES_PADDING = 24;
 
 /**
@@ -75,10 +77,9 @@ class ExpandableCalendar extends Component {
     super(props);
 
     this.style = styleConstructor(props.theme);
-    this.closedHeight = CLOSED_HEIGHT + (props.hideKnob ? 0 : KNOB_CONTAINER_HEIGHT);
-    this.numberOfWeeks = this.getNumberOfWeeksInMonth(XDate(this.props.context.date));
-    this.openHeight = this.getOpenHeight();
-
+    this.closedHeight = CLOSED_HEIGHT;
+    this.openHeight = OPENED_HEIGHT;
+    this.numberOfWeeks = NUMBER_OF_WEEKS;
     const startHeight = props.initialPosition === POSITIONS.CLOSED ? this.closedHeight : this.openHeight;
     this._height = startHeight;
     this._wrapperStyles = {style: {}};
@@ -168,12 +169,6 @@ class ExpandableCalendar extends Component {
   }
 
   /** Utils */
-  getOpenHeight() {
-    if (!this.props.horizontal) {
-      return Math.max(commons.screenHeight, commons.screenWidth);
-    }
-    return CLOSED_HEIGHT + (WEEK_HEIGHT * (this.numberOfWeeks - 1)) + (this.props.hideKnob ? 12 : KNOB_CONTAINER_HEIGHT);
-  }
 
   getDateString(date) {
     return date.toString('yyyy-MM-dd');
@@ -188,11 +183,6 @@ class ExpandableCalendar extends Component {
     const d = XDate(date);
     // getMonth() returns the month of the year (0-11). Value is zero-index, meaning Jan=0, Feb=1, Mar=2, etc.
     return d.getMonth() + 1;
-  }
-
-  getNumberOfWeeksInMonth(month) {
-    const days = dateutils.page(month, this.props.firstDay);
-    return days.length / 7;
   }
 
   getMarkedDates() {
@@ -263,6 +253,7 @@ class ExpandableCalendar extends Component {
   };
   handlePanResponderMove = (e, gestureState) => {
     // limit min height to closed height
+    this.speed = Math.abs((360 - Math.abs(gestureState.dx)) / gestureState.vx);
     this._wrapperStyles.style.height = Math.max(this.closedHeight, this._height + gestureState.dy);
 
     if (!this.props.horizontal) {
@@ -274,12 +265,15 @@ class ExpandableCalendar extends Component {
         this._weekCalendarStyles.style.opacity = Math.min(1, Math.max(1 - gestureState.dy / 100, 0));
       }
     }
-
     this.updateNativeStyles();
   };
   handlePanResponderEnd = () => {
     this._height = this._wrapperStyles.style.height;
-    this.bounceToPosition();
+    if (this.speed && this.speed < 10000) {
+      this.bounceToPosition(this.state.position === POSITIONS.CLOSED ? this.openHeight : this.closedHeight);
+    } else {
+      this.bounceToPosition();
+    }
   };
 
   /** Animated */
@@ -367,18 +361,6 @@ class ExpandableCalendar extends Component {
         const next = this.isLaterDate(_.first(value), date);
         this.scrollPage(next);
       }
-
-      // updating openHeight
-      setTimeout(() => { // to wait for setDate() call in horizontal scroll (this.scrollPage())
-        const numberOfWeeks = this.getNumberOfWeeksInMonth(parseDate(this.props.context.date));
-        if (numberOfWeeks !== this.numberOfWeeks) {
-          this.numberOfWeeks = numberOfWeeks;
-          this.openHeight = this.getOpenHeight();
-          if (this.state.position === POSITIONS.OPEN) {
-            this.bounceToPosition(this.openHeight);
-          }
-        }
-      }, 0);
     }
   }
 
