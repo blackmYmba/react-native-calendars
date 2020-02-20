@@ -52,7 +52,6 @@ function weekDayNames(firstDayOfWeek = 0) {
 function page(xd, firstDayOfWeek) {
   const days = month(xd);
   let before = [], after = [];
-
   const fdow = ((7 + firstDayOfWeek) % 7) || 7;
   const ldow = (fdow + 6) % 7;
 
@@ -64,6 +63,14 @@ function page(xd, firstDayOfWeek) {
   }
 
   const to = days[days.length - 1].clone();
+
+
+  const dayOfWeekFirstDayOfMonth = days[0].clone().getDay();
+  const daysBefore = (dayOfWeekFirstDayOfMonth + 6) % 7;
+  const daysCountToAdd = 42 - days.length - daysBefore;
+  const too = new XDate(to, true).addDays(daysCountToAdd)
+
+  
   const day = to.getDay();
   if (day !== ldow) {
     to.addDays((ldow + 7 - day) % 7);
@@ -74,7 +81,7 @@ function page(xd, firstDayOfWeek) {
   }
 
   if (isGTE(to, days[days.length - 1])) {
-    after = fromTo(days[days.length - 1], to);
+    after = fromTo(days[days.length - 1], too);
   }
 
   return before.concat(days.slice(1, days.length - 1), after);
