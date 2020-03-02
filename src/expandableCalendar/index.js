@@ -25,7 +25,7 @@ const POSITIONS = {
   CLOSED: 'closed',
   OPEN: 'open'
 };
-const SPEED = 20;
+const SPEED = 15;
 const BOUNCINESS = 6;
 const CLOSED_HEIGHT = 70;
 const OPENED_HEIGHT = 310;
@@ -241,9 +241,11 @@ class ExpandableCalendar extends Component {
       return false;
     }
     if (gestureState.dy > 5 || gestureState.dy < -5) {
-      this.deltaY.stopAnimation();
-      this.deltaY.setValue(this._height);
-      return true;
+      if (gestureState.dx < 2 && gestureState.dx > -2) {
+        this.deltaY.stopAnimation();
+        this.deltaY.setValue(this._height);
+        return true;
+      }
     }
 
     return false
@@ -269,7 +271,7 @@ class ExpandableCalendar extends Component {
   };
   handlePanResponderEnd = () => {
     this._height = this._wrapperStyles.style.height;
-    if (this.speed && this.speed < 10000) {
+    if (this.speed && this.speed < 19000) {
       this.bounceToPosition(this.state.position === POSITIONS.CLOSED ? this.openHeight : this.closedHeight);
     } else {
       this.bounceToPosition();
