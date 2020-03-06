@@ -241,7 +241,7 @@ class ExpandableCalendar extends Component {
       return false;
     }
     if (gestureState.dy > 5 || gestureState.dy < -5) {
-      if (gestureState.dx < 2 && gestureState.dx > -2) {
+      if (gestureState.dx < 3.5 && gestureState.dx > -3.5) {
         this.deltaY.stopAnimation();
         this.deltaY.setValue(this._height);
         return true;
